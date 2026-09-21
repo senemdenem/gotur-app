@@ -1,40 +1,34 @@
 import { cookies } from "next/headers";
-import { createHash, randomBytes } from "crypto";
-import { getPool } from "./db";
+import { callN8n } from "./n8n";
 
 export const SESSION_COOKIE = "gotur_session";
-const SESSION_TTL_DAYS = 90;
 
-export function hashToken(token: string): string {
-  return createHash("sha256").update(token).digest("hex");
-}
+export type CurrentUser = {
+  id: string;
+  phone: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+};
 
-export async function createSession(userId: string) {
-  const token = randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
-  const pool = getPool();
-  await pool.query(
-    `insert into sessions (user_id, token_hash, expires_at) values ($1, $2, $3)`,
-    [userId, hashToken(token), expiresAt]
-  );
+export function setSessionCookie(token: string, expiresAt: string) {
   cookies().set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: true,
     sameSite: "lax",
     path: "/",
-    expires: expiresAt,
+    expires: new Date(expiresAt),
   });
 }
 
-export async function getCurrentUser() {
+export async function getCurrentUser(): Promise<CurrentUser | null> {
   const token = cookies().get(SESSION_COOKIE)?.value;
   if (!token) return null;
-  const pool = getPool();
-  const { rows } = await pool.query(
-    `select u.id, u.phone, u.first_name, u.last_name, u.avatar_url
-     from sessions s join users u on u.id = s.user_id
-     where s.token_hash = $1 and s.expires_at > now()`,
-    [hashToken(token)]
-  );
-  return rows[0] ?? null;
+  try {
+    const { body } = await callN8n<{ user: CurrentUser }>("gotur/auth/me", { token });
+    if (!body.ok) return null;
+    return body.user;
+  } catch {
+    return null;
+  }
 }
