@@ -1,4 +1,37 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 export default function GirisPage() {
+  const router = useRouter();
+  const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Bir şeyler ters gitti");
+        return;
+      }
+      const qs = data.devCode ? `?dev=${data.devCode}` : "";
+      router.push(`/kod?phone=${encodeURIComponent(phone)}${qs}`);
+    } catch {
+      setError("Sunucuya ulaşılamadı");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main
       style={{
@@ -46,6 +79,8 @@ export default function GirisPage() {
             inputMode="tel"
             placeholder="5XX XXX XX XX"
             aria-label="Telefon numarası"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
             style={{
               flex: 1,
               minWidth: 0,
@@ -62,8 +97,14 @@ export default function GirisPage() {
           />
         </div>
 
+        {error && (
+          <p style={{ color: "var(--danger)", fontSize: 14, marginTop: 8 }}>{error}</p>
+        )}
+
         <button
           type="button"
+          disabled={loading || phone.trim().length < 10}
+          onClick={submit}
           style={{
             marginTop: 12,
             width: "100%",
@@ -74,9 +115,10 @@ export default function GirisPage() {
             color: "var(--on-primary)",
             fontSize: 17,
             fontWeight: 800,
+            opacity: loading ? 0.7 : 1,
           }}
         >
-          Kod Gönder
+          {loading ? "Gönderiliyor…" : "Kod Gönder"}
         </button>
 
         <p style={{ marginTop: 14, textAlign: "center", color: "var(--teal)", fontWeight: 600, fontSize: 14 }}>
