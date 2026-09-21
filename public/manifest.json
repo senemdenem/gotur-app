@@ -1,0 +1,12 @@
+{
+  "name": "Götür.tr",
+  "short_name": "Götür",
+  "description": "Yükün seni bulsun — şoförler için akıllı yük bildirim uygulaması",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F3F8FA",
+  "theme_color": "#17456F",
+  "orientation": "portrait",
+  "lang": "tr",
+  "icons": []
+}
