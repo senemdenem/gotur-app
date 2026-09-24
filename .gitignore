@@ -5,3 +5,7 @@ out
 .vercel
 *.tsbuildinfo
 next-env.d.ts
+
+# Serwist (derlenmiş service worker, build sırasında üretilir)
+public/sw*
+public/swe-worker*

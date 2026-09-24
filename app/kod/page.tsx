@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { readCampaign, trackEvent } from "@/lib/campaign";
 
 function KodForm() {
   const router = useRouter();
@@ -26,6 +27,8 @@ function KodForm() {
         setError(data.error ?? "Bir şeyler ters gitti");
         return;
       }
+      const campaign = readCampaign();
+      void trackEvent("OTP_COMPLETED", campaign?.ref || phone, campaign?.source);
       router.push("/yukler");
     } catch {
       setError("Sunucuya ulaşılamadı");

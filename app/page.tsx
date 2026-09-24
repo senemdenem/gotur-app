@@ -1,13 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { readCampaign, refToLocalPhone } from "@/lib/campaign";
 
 export default function GirisPage() {
   const router = useRouter();
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const campaign = readCampaign();
+    if (campaign?.ref) {
+      const local = refToLocalPhone(campaign.ref);
+      if (local) setPhone(local);
+    }
+  }, []);
 
   async function submit() {
     setError(null);
