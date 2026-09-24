@@ -21,8 +21,12 @@ export function setSessionCookie(token: string, expiresAt: string) {
   });
 }
 
+export function getSessionToken(): string | null {
+  return cookies().get(SESSION_COOKIE)?.value ?? null;
+}
+
 export async function getCurrentUser(): Promise<CurrentUser | null> {
-  const token = cookies().get(SESSION_COOKIE)?.value;
+  const token = getSessionToken();
   if (!token) return null;
   try {
     const { body } = await callN8n<{ user: CurrentUser }>("gotur/auth/me", { token });
