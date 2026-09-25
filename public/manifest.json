@@ -2,7 +2,7 @@
   "name": "Götür.tr",
   "short_name": "Götür.tr",
   "description": "Yükün seni bulsun — şoförler için akıllı yük bildirim uygulaması",
-  "start_url": "/",
+  "start_url": "/?launch=app",
   "display": "standalone",
   "background_color": "#F3F8FA",
   "theme_color": "#17456F",
@@ -10,6 +10,8 @@
   "lang": "tr",
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
