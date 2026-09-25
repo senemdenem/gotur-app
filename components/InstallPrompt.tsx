@@ -12,7 +12,10 @@ function isStandalone(): boolean {
   if (typeof window === "undefined") return false;
   const mm = window.matchMedia?.("(display-mode: standalone)").matches;
   const iosStandalone = (window.navigator as unknown as { standalone?: boolean }).standalone === true;
-  return !!mm || !!iosStandalone;
+  // manifest start_url'deki launch=app işareti: bazı Android WebView senaryolarında
+  // matchMedia gecikebiliyor, bu ek sinyal onu telafi eder.
+  const launchFlag = new URLSearchParams(window.location.search).get("launch") === "app";
+  return !!mm || !!iosStandalone || launchFlag;
 }
 
 function isIOS(): boolean {
@@ -20,10 +23,17 @@ function isIOS(): boolean {
   return /iphone|ipad|ipod/i.test(navigator.userAgent);
 }
 
+/** Android/Huawei/HarmonyOS gibi mobil taray\u0131c\u0131lar\u0131 kapsar; iOS hari\u00e7. */
+function isLikelyMobileNonIOS(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /android|huawei|harmonyos|mobile/i.test(navigator.userAgent) && !isIOS();
+}
+
 export default function InstallPrompt() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [showAndroid, setShowAndroid] = useState(false);
   const [showIOS, setShowIOS] = useState(false);
+  const [showGeneric, setShowGeneric] = useState(false);
 
   useEffect(() => {
     if (isStandalone()) {
@@ -36,14 +46,30 @@ export default function InstallPrompt() {
 
     if (Date.now() < getInstallSnoozedUntil()) return;
 
+    let promptFired = false;
+
     function onBeforeInstallPrompt(e: Event) {
+      promptFired = true;
       e.preventDefault();
       setDeferred(e as BeforeInstallPromptEvent);
       setShowAndroid(true);
     }
     window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
 
-    if (isIOS()) setShowIOS(true);
+    if (isIOS()) {
+      setShowIOS(true);
+    } else if (isLikelyMobileNonIOS()) {
+      // Chrome/Android'de beforeinstallprompt genelde hemen gelir; Huawei tarayıcısı
+      // (ve bazı diğer Android tarayıcıları) bu event'i hiç tetiklemez. Kısa bir süre
+      // bekleyip gelmediyse tarayıcı menüsünden ekleme rehberine düş.
+      const timer = window.setTimeout(() => {
+        if (!promptFired) setShowGeneric(true);
+      }, 2500);
+      return () => {
+        window.clearTimeout(timer);
+        window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+      };
+    }
 
     return () => window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
   }, []);
@@ -52,6 +78,7 @@ export default function InstallPrompt() {
     snoozeInstallPrompt(24);
     setShowAndroid(false);
     setShowIOS(false);
+    setShowGeneric(false);
   }
 
   async function installAndroid() {
@@ -146,6 +173,49 @@ export default function InstallPrompt() {
           1. Alttaki <b>Paylaş</b> ikonuna dokun
           <br />
           2. <b>Ana Ekrana Ekle</b>&apos;yi seç
+        </p>
+        <button
+          type="button"
+          onClick={dismiss}
+          style={{
+            marginTop: 14,
+            width: "100%",
+            height: 48,
+            borderRadius: 12,
+            border: 0,
+            background: "var(--primary)",
+            color: "var(--on-primary)",
+            fontWeight: 800,
+            fontSize: 15,
+          }}
+        >
+          Anladım
+        </button>
+      </div>
+    );
+  }
+
+  if (showGeneric) {
+    return (
+      <div
+        role="dialog"
+        aria-label="Ana ekrana ekle"
+        style={{
+          position: "fixed",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 50,
+          background: "var(--surface)",
+          borderRadius: "20px 20px 0 0",
+          padding: "18px 20px 24px",
+          boxShadow: "0 -8px 24px rgba(0,0,0,0.22)",
+        }}
+      >
+        <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6 }}>Ana Ekrana Ekle</div>
+        <p style={{ fontSize: 14, color: "var(--muted)", lineHeight: 1.55, margin: 0 }}>
+          Tarayıcının sağ üst köşesindeki menüye (⋮) dokun, ardından{" "}
+          <b>Ana ekrana ekle</b> veya <b>Kısayol oluştur</b> seçeneğini seç.
         </p>
         <button
           type="button"
