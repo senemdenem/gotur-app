@@ -14,6 +14,11 @@ export const metadata: Metadata = {
     ],
     apple: "/icons/apple-touch-icon.png",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Götür.tr",
+  },
 };
 
 export const viewport: Viewport = {
