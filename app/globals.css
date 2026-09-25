@@ -49,6 +49,13 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  /* iOS'ta standalone modda çentik/ana ekran çubuğu alanına içerik girmesin */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html {
+  scroll-padding-top: env(safe-area-inset-top, 0px);
 }
 
 button,
