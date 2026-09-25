@@ -3,7 +3,7 @@ import { callN8n } from "@/lib/n8n";
 import { getSessionToken } from "@/lib/session";
 
 export async function POST(req: NextRequest) {
-  const token = getSessionToken();
+  const token = await getSessionToken();
   if (!token) return NextResponse.json({ error: "Giriş gerekli" }, { status: 401 });
 
   const body = await req.json().catch(() => null);

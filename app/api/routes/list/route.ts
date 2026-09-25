@@ -14,7 +14,7 @@ export type Route = {
 };
 
 export async function GET() {
-  const token = getSessionToken();
+  const token = await getSessionToken();
   if (!token) return NextResponse.json({ error: "Giriş gerekli" }, { status: 401 });
 
   const { status, body } = await callN8n<{ routes: Route[] }>("gotur/routes/list", { token });

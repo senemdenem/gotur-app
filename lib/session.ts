@@ -11,8 +11,9 @@ export type CurrentUser = {
   avatar_url: string | null;
 };
 
-export function setSessionCookie(token: string, expiresAt: string) {
-  cookies().set(SESSION_COOKIE, token, {
+export async function setSessionCookie(token: string, expiresAt: string) {
+  const cookieStore = await cookies();
+  cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: true,
     sameSite: "lax",
@@ -21,12 +22,13 @@ export function setSessionCookie(token: string, expiresAt: string) {
   });
 }
 
-export function getSessionToken(): string | null {
-  return cookies().get(SESSION_COOKIE)?.value ?? null;
+export async function getSessionToken(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get(SESSION_COOKIE)?.value ?? null;
 }
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
-  const token = getSessionToken();
+  const token = await getSessionToken();
   if (!token) return null;
   try {
     const { body } = await callN8n<{ user: CurrentUser }>("gotur/auth/me", { token });

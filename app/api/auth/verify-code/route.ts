@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: result.error ?? "Doğrulama başarısız" }, { status: status || 400 });
     }
 
-    setSessionCookie(result.sessionToken, result.expiresAt);
+    await setSessionCookie(result.sessionToken, result.expiresAt);
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json({ error: "Sunucu hatası, birazdan tekrar dene." }, { status: 500 });

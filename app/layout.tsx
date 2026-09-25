@@ -1,3 +1,4 @@
+import { SerwistProvider } from "@serwist/turbopack/react";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import CampaignTracker from "@/components/CampaignTracker";
@@ -40,10 +41,12 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body>
-        <CampaignTracker />
-        <UpdateToast />
-        {children}
-        <InstallPrompt />
+        <SerwistProvider swUrl="/serwist/sw.js">
+          <CampaignTracker />
+          <UpdateToast />
+          {children}
+          <InstallPrompt />
+        </SerwistProvider>
       </body>
     </html>
   );
