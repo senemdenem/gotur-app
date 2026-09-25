@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import CampaignTracker from "@/components/CampaignTracker";
 import InstallPrompt from "@/components/InstallPrompt";
+import UpdateToast from "@/components/UpdateToast";
 
 export const metadata: Metadata = {
   title: "götür.tr",
@@ -40,6 +41,7 @@ export default function RootLayout({
     <html lang="tr">
       <body>
         <CampaignTracker />
+        <UpdateToast />
         {children}
         <InstallPrompt />
       </body>
